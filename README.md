@@ -15,12 +15,12 @@ This is a Go project template that provides a standard layout for CLI applicatio
 
 1. **Clone the Template**  
    ```bash
-   git clone https://github.com/<your-org>/go-project-template.git
-   cd go-project-template
+   git clone https://github.com/<your-org>/l2sm-dns.git
+   cd l2sm-dns
    ```
 
 2. **Update go.mod**  
-   Change `module github.com/<your-org>/go-project-template` to your own module path:
+   Change `module github.com/<your-org>/l2sm-dns` to your own module path:
    ```bash
    go mod edit -module github.com/<your-org>/your-new-service
    go mod tidy

@@ -1,7 +1,7 @@
 
 TAG = 0.1
 # Image URL to use for building/pushing
-IMG ?= alexdecb/hello-world:$(TAG)
+IMG ?= alexdecb/dns-world:$(TAG)
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.29.0
@@ -66,24 +66,24 @@ help: ## Display this help.
 .PHONY: generate-proto
 export PATH := $(PATH):$(LOCALBIN)
 generate-proto: install-tools ## Generate gRPC code from .proto file.
-	protoc -I=api/v1 --go_out=paths=source_relative:./api/v1/hello --go-grpc_out=paths=source_relative:./api/v1/hello api/v1/hello.proto
+	protoc -I=api/v1 --go_out=paths=source_relative:./api/v1/dns --go-grpc_out=paths=source_relative:./api/v1/dns api/v1/dns.proto
 
 .PHONY: run
 include .env
 export $(shell sed 's/=.*//' .env)
 run: 
-	go run ./cmd/hello
+	go run ./cmd/dns
 
 .PHONY: build
 build: fmt vet 
-	go build -o $(LOCALBIN)/server ./cmd/hello/
+	go build -o $(LOCALBIN)/server ./cmd/dns/
 
 
 .PHONY: build-installer
 build-installer: kustomize ## Generate a consolidated YAML with CRDs and deployment.
 	echo "" > deployments/deployment.yaml
 	echo "---" >> deployments/deployment.yaml  
-	cd config/hello && $(KUSTOMIZE) edit set image hello=${IMG}
+	cd config/dns && $(KUSTOMIZE) edit set image dns=${IMG}
 	$(KUSTOMIZE) build config/default >> deployments/deployment.yaml
 
 .PHONY: fmt
@@ -97,7 +97,7 @@ vet: ## Run go vet against code.
 
 .PHONY: deploy
 deploy: kustomize ## Deploy server to the K8s cluster specified in ~/.kube/config.
-	cd config/hello && $(KUSTOMIZE) edit set image hello=${IMG}
+	cd config/dns && $(KUSTOMIZE) edit set image dns=${IMG}
 	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f - 
 
 .PHONY: undeploy
