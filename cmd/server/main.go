@@ -17,6 +17,7 @@ package main
 import (
 	"log"
 	"net"
+	"os"
 	"path/filepath"
 
 	"github.com/Networks-it-uc3m/l2sm-dns/api/v1/dns"
@@ -28,31 +29,46 @@ import (
 )
 
 func main() {
-
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", ":8081")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	// Create a new gRPC server
+	// Create a new gRPC server.
 	grpcServer := grpc.NewServer()
 
+	// Attempt to get an in-cluster config; if not available, fallback to kubeconfig.
 	k8sConfig, err := rest.InClusterConfig()
 	if err != nil {
-		// If in-cluster config is not available, try the local kubeconfig
 		k8sConfig, err = clientcmd.BuildConfigFromFlags("", filepath.Join(homedir.HomeDir(), ".kube", "config"))
 		if err != nil {
 			log.Fatalf("could not create config from either in-cluster or kubeconfig: %v", err)
 		}
 	}
 
-	corednsmanager, err := corednsmanager.NewCoreDNSManager("default", "coredns", k8sConfig)
+	// Read namespace and configmap name from environment variables.
+	// Defaults: "default" and "l2smdns-coredns-config".
+	namespace := os.Getenv("CONFIGMAP_NS")
+	if namespace == "" {
+		namespace = "default"
+	}
+	configmapName := os.Getenv("CONFIGMAP_NAME")
+	if configmapName == "" {
+		configmapName = "l2smdns-coredns-config"
+	}
 
-	dns.RegisterDnsServiceServer(grpcServer, &server{dns.UnimplementedDnsServiceServer{}, *corednsmanager})
+	// Create a new CoreDNSManager using the provided namespace and configmap name.
+	coreDNSMgr, err := corednsmanager.NewCoreDNSManager(namespace, configmapName, k8sConfig)
+	if err != nil {
+		log.Fatalf("Failed to create CoreDNS Manager: %v", err)
+	}
+
+	// Register the DNS service server.
+	dns.RegisterDnsServiceServer(grpcServer, &server{dns.UnimplementedDnsServiceServer{}, *coreDNSMgr})
 
 	log.Printf("Server listening at %v", lis.Addr())
 
-	// Start serving requests
+	// Start serving requests.
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
