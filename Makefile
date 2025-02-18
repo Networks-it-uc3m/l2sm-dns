@@ -1,7 +1,7 @@
 
-TAG = 0.1
+TAG = 1.0
 # Image URL to use for building/pushing
-IMG ?= alexdecb/dns-world:$(TAG)
+IMG ?= alexdecb/l2smdns-grpc:$(TAG)
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.29.0
@@ -12,6 +12,7 @@ GOBIN=$(shell go env GOPATH)/bin
 else
 GOBIN=$(shell go env GOBIN)
 endif
+
 
 # CONTAINER_TOOL defines the container tool to be used for building images.
 # Be aware that the target commands are only tested with Docker which is
@@ -72,7 +73,7 @@ generate-proto: install-tools ## Generate gRPC code from .proto file.
 include .env
 export $(shell sed 's/=.*//' .env)
 run: 
-	go run ./cmd/dns
+	go run ./cmd/server
 
 .PHONY: build
 build: fmt vet 
@@ -83,8 +84,9 @@ build: fmt vet
 build-installer: kustomize ## Generate a consolidated YAML with CRDs and deployment.
 	echo "" > deployments/deployment.yaml
 	echo "---" >> deployments/deployment.yaml  
-	cd config/dns && $(KUSTOMIZE) edit set image dns=${IMG}
+	cd config/server && $(KUSTOMIZE) edit set image dns=${IMG}
 	$(KUSTOMIZE) build config/default >> deployments/deployment.yaml
+
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
@@ -97,8 +99,9 @@ vet: ## Run go vet against code.
 
 .PHONY: deploy
 deploy: kustomize ## Deploy server to the K8s cluster specified in ~/.kube/config.
-	cd config/dns && $(KUSTOMIZE) edit set image dns=${IMG}
-	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f - 
+	cd config/server && $(KUSTOMIZE) edit set image dns=${IMG}
+	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f -
+
 
 .PHONY: undeploy
 undeploy: kustomize ## Undeploy server from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
@@ -109,8 +112,9 @@ kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
 	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5,$(KUSTOMIZE_VERSION))
 	
+	
 .PHONY: deploy-dev
-deploy-dev: apply-cert kustomize
+deploy-dev: kustomize
 	$(KUSTOMIZE) build config/dev | $(KUBECTL) apply -f - 
 	
 .PHONY: undeploy-dev
@@ -136,6 +140,34 @@ add-license: install-tools
 
 
 
+
+.PHONY: create-cluster
+create-cluster:
+	kind create cluster --config ./examples/quickstart/kind-cluster.yaml
+
+
 .PHONY: clean
 clean:
-	
+	kind delete clusters --all
+
+PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
+.PHONY: docker-buildx
+docker-buildx: ## Build and push docker image for the manager for cross-platform support
+	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
+	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' Dockerfile > Dockerfile.cross
+	- $(CONTAINER_TOOL) buildx create --name project-v3-builder
+	$(CONTAINER_TOOL) buildx use project-v3-builder
+	- $(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${IMG} -f Dockerfile.cross .
+	- $(CONTAINER_TOOL) buildx rm project-v3-builder
+	rm Dockerfile.cross
+
+
+define go-install-tool
+@[ -f $(1) ] || { \
+set -e; \
+package=$(2)@$(3) ;\
+echo "Downloading $${package}" ;\
+GOBIN=$(LOCALBIN) go install $${package} ;\
+mv "$$(echo "$(1)" | sed "s/-$(3)$$//")" $(1) ;\
+}
+endef
