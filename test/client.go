@@ -60,7 +60,7 @@ func main() {
 	}
 
 	// Create a gRPC connection.
-	conn, err := grpc.Dial(cfg.ServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(cfg.ServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to server at %s: %v", cfg.ServerAddress, err)
 	}
