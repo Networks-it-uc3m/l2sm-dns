@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: l2sm-system
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coredns
+  labels:
+    app: l2sm-coredns
+    app.kubernetes.io/instance: "l2sm-coredns"
+    k8s-app: l2sm-coredns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "l2sm-coredns"
+    app.kubernetes.io/name: l2sm-coredns
+    app.kubernetes.io/version: "1.12.0"
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: "25%"
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: "l2sm-coredns"
+      k8s-app: l2sm-coredns
+      app.kubernetes.io/name: l2sm-coredns
+  template:
+    metadata:
+      labels:
+        k8s-app: l2sm-coredns
+        app.kubernetes.io/name: l2sm-coredns
+        app.kubernetes.io/instance: "l2sm-coredns"
+      annotations:
+        checksum/config: 58efddd4e9f9e69d52c550642f3dcd7d47ce558e843fddf6aa5b42face545395
+    spec:
+      serviceAccountName: l2smdns-dns-sa
+      dnsPolicy: Default
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: dns-server
+        image: dns-grpc
+        ports:
+        - containerPort: 8081
+        env:
+        - name: CONFIGMAP_NS
+          value: l2sm-system
+        - name: CONFIGMAP_NAME
+          value: l2smdns-coredns-config
+      - name: coredns
+        image: coredns/coredns:1.12.0
+        imagePullPolicy: IfNotPresent
+        args: [ "-conf", "/etc/coredns/Corefile" ]
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/coredns
+        resources:
+          limits:
+            cpu: "100m"
+            memory: 128Mi
+          requests:
+            cpu: "100m"
+            memory: 128Mi
+        ports:
+        - containerPort: 53
+          name: udp-53
+          protocol: UDP
+        - containerPort: 53
+          name: tcp-53
+          protocol: TCP
+        - containerPort: 9153
+          name: tcp-9153
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8181
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: l2smdns-coredns-config
+          items:
+          - key: Corefile
+            path: Corefile
