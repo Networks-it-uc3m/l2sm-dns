@@ -50,7 +50,7 @@ spec:
       annotations:
         checksum/config: 58efddd4e9f9e69d52c550642f3dcd7d47ce558e843fddf6aa5b42face545395
     spec:
-      serviceAccountName: l2smdns-dns-sa
+      serviceAccountName: dns-sa
       dnsPolicy: Default
       tolerations:
       - key: CriticalAddonsOnly
@@ -65,7 +65,7 @@ spec:
         - name: CONFIGMAP_NS
           value: l2sm-system
         - name: CONFIGMAP_NAME
-          value: l2smdns-coredns-config
+          value: coredns-config
       - name: coredns
         image: coredns/coredns:1.12.0
         imagePullPolicy: IfNotPresent
@@ -121,7 +121,7 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: l2smdns-coredns-config
+          name: coredns-config
           items:
           - key: Corefile
             path: Corefile
