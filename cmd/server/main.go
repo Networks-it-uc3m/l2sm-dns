@@ -17,10 +17,10 @@ package main
 import (
 	"log"
 	"net"
-	"os"
 	"path/filepath"
 
 	"github.com/Networks-it-uc3m/l2sm-dns/api/v1/dns"
+	"github.com/Networks-it-uc3m/l2sm-dns/internal/env"
 	corednsmanager "github.com/Networks-it-uc3m/l2sm-dns/pkg/coredns-manager"
 	"google.golang.org/grpc"
 	"k8s.io/client-go/rest"
@@ -29,7 +29,7 @@ import (
 )
 
 func main() {
-	lis, err := net.Listen("tcp", ":8081")
+	lis, err := net.Listen("tcp", env.GetServerPort())
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -48,14 +48,8 @@ func main() {
 
 	// Read namespace and configmap name from environment variables.
 	// Defaults: "default" and "l2smdns-coredns-config".
-	namespace := os.Getenv("CONFIGMAP_NS")
-	if namespace == "" {
-		namespace = "default"
-	}
-	configmapName := os.Getenv("CONFIGMAP_NAME")
-	if configmapName == "" {
-		configmapName = "l2smdns-coredns-config"
-	}
+	namespace := env.GetConfigMapNS()
+	configmapName := env.GetConfigMapName()
 
 	// Create a new CoreDNSManager using the provided namespace and configmap name.
 	coreDNSMgr, err := corednsmanager.NewCoreDNSManager(namespace, configmapName, k8sConfig)
