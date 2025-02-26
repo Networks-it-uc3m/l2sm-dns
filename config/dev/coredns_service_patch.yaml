@@ -15,7 +15,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: service
+  name: dns-service
 spec:
   type: NodePort
   ports:
