@@ -36,3 +36,7 @@ func GetConfigMapName() string {
 func GetServerPort() string {
 	return getEnv("SERVER_PORT", "8081")
 }
+
+func GetInterDomainDomPort() string {
+	return getEnv("INTER_DOMAIN_DOM_PORT", ".:53")
+}
