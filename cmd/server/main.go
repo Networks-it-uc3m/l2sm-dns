@@ -15,13 +15,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"path/filepath"
 
 	"github.com/Networks-it-uc3m/l2sm-dns/api/v1/dns"
 	"github.com/Networks-it-uc3m/l2sm-dns/internal/env"
-	corednsmanager "github.com/Networks-it-uc3m/l2sm-dns/pkg/coredns-manager"
+	configmapmanager "github.com/Networks-it-uc3m/l2sm-dns/pkg/configmapmanager"
 	"google.golang.org/grpc"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -29,7 +30,7 @@ import (
 )
 
 func main() {
-	lis, err := net.Listen("tcp", env.GetServerPort())
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", env.GetServerPort()))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -51,8 +52,8 @@ func main() {
 	namespace := env.GetConfigMapNS()
 	configmapName := env.GetConfigMapName()
 
-	// Create a new CoreDNSManager using the provided namespace and configmap name.
-	coreDNSMgr, err := corednsmanager.NewCoreDNSManager(namespace, configmapName, k8sConfig)
+	// Create a new configmapmanager using the provided namespace and configmap name.
+	coreDNSMgr, err := configmapmanager.NewCoreDNSManager(namespace, configmapName, k8sConfig)
 	if err != nil {
 		log.Fatalf("Failed to create CoreDNS Manager: %v", err)
 	}

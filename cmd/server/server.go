@@ -19,20 +19,20 @@ import (
 	"fmt"
 
 	"github.com/Networks-it-uc3m/l2sm-dns/api/v1/dns"
-	corednsmanager "github.com/Networks-it-uc3m/l2sm-dns/pkg/coredns-manager"
+	configmapmanager "github.com/Networks-it-uc3m/l2sm-dns/pkg/configmapmanager"
 )
 
 type server struct {
 	dns.UnimplementedDnsServiceServer
-	corednsmanager.CoreDNSManager
+	configmapmanager.CoreDNSManager
 }
 
 // CreateNetwork calls a method from mdclient to create a network
 func (s *server) AddEntry(ctx context.Context, req *dns.AddEntryRequest) (*dns.AddEntryResponse, error) {
 
-	dnsEntry := corednsmanager.DNSEntry{PodName: req.Entry.GetPodName(), Network: req.Entry.GetNetwork(), Scope: req.Entry.GetScope()}
+	dnsEntry := configmapmanager.DNSEntry{PodName: req.Entry.GetPodName(), Network: req.Entry.GetNetwork(), Scope: req.Entry.GetScope()}
 
-	entryKey, err := corednsmanager.GenerateKey(dnsEntry)
+	entryKey, err := configmapmanager.GenerateKey(dnsEntry)
 
 	if err != nil {
 		return &dns.AddEntryResponse{}, fmt.Errorf("could not generate entry key. err: %v", err)
@@ -45,5 +45,17 @@ func (s *server) AddEntry(ctx context.Context, req *dns.AddEntryRequest) (*dns.A
 	}
 
 	return &dns.AddEntryResponse{}, nil
+
+}
+
+func (s *server) AddServer(ctx context.Context, req *dns.AddServerRequest) (*dns.AddServerResponse, error) {
+
+	err := s.CoreDNSManager.AddServerToConfigMap(ctx, req.Server.GetDomPort(), req.Server.GetServerDomain(), req.Server.GetServerPort())
+
+	if err != nil {
+		return &dns.AddServerResponse{}, fmt.Errorf("could not create server. err: %v", err)
+
+	}
+	return &dns.AddServerResponse{}, nil
 
 }
