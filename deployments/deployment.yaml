@@ -70,26 +70,23 @@ metadata:
 apiVersion: v1
 kind: Service
 metadata:
-  name: l2smdns-service
+  name: l2smdns-dns-service
   namespace: l2sm-system
 spec:
   ports:
   - name: dns
-    nodePort: 30053
     port: 53
     protocol: UDP
   - name: dns-tcp
-    nodePort: 30053
     port: 53
     protocol: TCP
   - name: updater
-    nodePort: 30808
     port: 8081
     protocol: TCP
     targetPort: 8081
   selector:
     k8s-app: l2sm-coredns
-  type: NodePort
+  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -130,7 +127,7 @@ spec:
         - name: CONFIGMAP_NS
           value: l2sm-system
         - name: CONFIGMAP_NAME
-          value: l2smdns-coredns-config
+          value: coredns-config
         image: alexdecb/l2smdns-grpc:1.0
         name: dns-server
         ports:
