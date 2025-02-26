@@ -22,8 +22,9 @@ import (
 
 // Config holds the configuration parameters for the DNS client.
 type Config struct {
-	ServerAddress string         `yaml:"serverAddress"`
-	DNS           DNSEntryConfig `yaml:"dns"`
+	ServerAddress string          `yaml:"serverAddress"`
+	DNS           DNSEntryConfig  `yaml:"dns"`
+	Server        DNSServerConfig `yaml:"server"`
 }
 
 // DNSEntryConfig holds the default DNS entry parameters.
@@ -32,6 +33,12 @@ type DNSEntryConfig struct {
 	IpAddress string `yaml:"ipAddress"`
 	Network   string `yaml:"network"`
 	Scope     string `yaml:"scope"`
+}
+
+type DNSServerConfig struct {
+	DomPort      string `yaml:"domPort"`
+	ServerDomain string `yaml:"serverDomain"`
+	ServerPort   string `yaml:"serverPort"`
 }
 
 // LoadConfig reads a YAML configuration file and unmarshals it into a Config struct.

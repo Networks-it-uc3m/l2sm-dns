@@ -27,6 +27,8 @@ import (
 func main() {
 	// Command-line flags.
 	testAddEntry := flag.Bool("test-add-entry", false, "Simulate adding a DNS entry")
+	testAddServer := flag.Bool("test-add-server", false, "Simulate adding a server")
+
 	configPath := flag.String("config", "./config.yaml", "Path to YAML config file")
 	// Allow overriding default DNS entry parameters from config.
 	podName := flag.String("pod", "", "Pod name for the DNS entry")
@@ -88,7 +90,23 @@ func main() {
 			log.Fatalf("Failed to add DNS entry: %v", err)
 		}
 		fmt.Printf("AddEntry response: %s\n", resp.GetMessage())
-	} else {
-		fmt.Println("No operation specified. Use the --test-add-entry flag to send a DNS entry request.")
+	}
+	if *testAddServer {
+		fmt.Println("Sending AddServer request...")
+		req := &dns.AddServerRequest{
+			Server: &dns.Server{
+				DomPort:      cfg.Server.DomPort,
+				ServerDomain: cfg.Server.ServerDomain,
+				ServerPort:   cfg.Server.ServerPort,
+			},
+		}
+		// Wrap the call in a context with timeout.
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		resp, err := client.AddServer(ctx, req)
+		if err != nil {
+			log.Fatalf("Failed to add DNS server: %v", err)
+		}
+		fmt.Printf("AddEntry response: %s\n", resp.GetMessage())
 	}
 }

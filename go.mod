@@ -5,6 +5,7 @@ go 1.21.7
 toolchain go1.22.5
 
 require (
+	github.com/coredns/caddy v1.1.1
 	google.golang.org/grpc v1.67.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 v2.4.0

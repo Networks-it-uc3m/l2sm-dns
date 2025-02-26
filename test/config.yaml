@@ -17,11 +17,16 @@
 # ======================
 
 # Address of your DNS gRPC server
-serverAddress: "172.20.0.2:30808"
+serverAddress: "localhost:8081"
 
 # Default DNS entry parameters for testing.
 dns:
-  podName: "pingo"
-  ipAddress: "10.0.1.2"
-  network: "test-network"
-  scope: "inter"
+  podName: "pingi"
+  ipAddress: "10.1.1.2"
+  network: "test-networking"
+  scope: "global"
+
+server: 
+  domPort: "inter.l2sm"
+  serverDomain: "172.20.0.2"
+  serverPort: "30053"
