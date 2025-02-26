@@ -53,13 +53,13 @@ func main() {
 	configmapName := env.GetConfigMapName()
 
 	// Create a new configmapmanager using the provided namespace and configmap name.
-	coreDNSMgr, err := configmapmanager.NewCoreDNSManager(namespace, configmapName, k8sConfig)
+	dnsManager, err := configmapmanager.NewDNSManager(namespace, configmapName, k8sConfig, nil)
 	if err != nil {
 		log.Fatalf("Failed to create CoreDNS Manager: %v", err)
 	}
 
 	// Register the DNS service server.
-	dns.RegisterDnsServiceServer(grpcServer, &server{dns.UnimplementedDnsServiceServer{}, *coreDNSMgr})
+	dns.RegisterDnsServiceServer(grpcServer, &server{dns.UnimplementedDnsServiceServer{}, dnsManager})
 
 	log.Printf("Server listening at %v", lis.Addr())
 

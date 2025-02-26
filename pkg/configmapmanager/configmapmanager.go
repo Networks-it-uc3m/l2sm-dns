@@ -1,16 +1,5 @@
-// Copyright 2025 Alejandro de Cock Buning; Ivan Vidal; Francisco Valera; Diego R. Lopez.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2025 ...
+// Licensed under the Apache License, Version 2.0; see LICENSE.
 
 package configmapmanager
 
@@ -18,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/Networks-it-uc3m/l2sm-dns/internal/env"
 	"github.com/Networks-it-uc3m/l2sm-dns/pkg/corefile"
@@ -27,35 +18,114 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-// CoreDNSManager manages CoreDNS ConfigMaps and DNS entries.
-type CoreDNSManager struct {
+// DNSManager defines the interface for managing CoreDNS ConfigMaps.
+type DNSManager interface {
+	GetConfigMap(ctx context.Context) (*v1.ConfigMap, error)
+	AddDNSEntryToConfigMap(ctx context.Context, updatedData map[string]string) error
+	RemoveDNSRecords(ctx context.Context, removals map[string][]string) error
+	ListDNSRecords(ctx context.Context) (map[string][]string, error)
+	AddDNSEntry(ctx context.Context, dnsName, ipAddress string) error
+	RemoveDNSEntry(ctx context.Context, key string) error
+	AddServerToConfigMap(ctx context.Context, domainName, serverDomain, serverPort string) error
+}
+
+// ConfigMapClient is an abstraction over different ways to interact with a ConfigMap.
+type ConfigMapClient interface {
+	Get(ctx context.Context) (*v1.ConfigMap, error)
+	Update(ctx context.Context, cfg *v1.ConfigMap) error
+}
+
+// --- Controller-runtime based client ---
+type crConfigMapClient struct {
+	client    client.Client
+	namespace string
+	name      string
+}
+
+func newCRConfigMapClient(namespace, name string, crClient client.Client) ConfigMapClient {
+	return &crConfigMapClient{
+		client:    crClient,
+		namespace: namespace,
+		name:      name,
+	}
+}
+
+func (c *crConfigMapClient) Get(ctx context.Context) (*v1.ConfigMap, error) {
+	cfg := &v1.ConfigMap{}
+	key := client.ObjectKey{Namespace: c.namespace, Name: c.name}
+	if err := c.client.Get(ctx, key, cfg); err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
+func (c *crConfigMapClient) Update(ctx context.Context, cfg *v1.ConfigMap) error {
+	return c.client.Update(ctx, cfg)
+}
+
+// --- Clientset based client ---
+type clientsetConfigMapClient struct {
 	clientset *kubernetes.Clientset
+	namespace string
+	name      string
+}
+
+func newClientsetConfigMapClient(namespace, name string, k8sConfig *rest.Config) (ConfigMapClient, error) {
+	clientset, err := kubernetes.NewForConfig(k8sConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes clientset: %w", err)
+	}
+	return &clientsetConfigMapClient{
+		clientset: clientset,
+		namespace: namespace,
+		name:      name,
+	}, nil
+}
+
+func (c *clientsetConfigMapClient) Get(ctx context.Context) (*v1.ConfigMap, error) {
+	return c.clientset.CoreV1().ConfigMaps(c.namespace).Get(ctx, c.name, metav1.GetOptions{})
+}
+
+func (c *clientsetConfigMapClient) Update(ctx context.Context, cfg *v1.ConfigMap) error {
+	_, err := c.clientset.CoreV1().ConfigMaps(c.namespace).Update(ctx, cfg, metav1.UpdateOptions{})
+	return err
+}
+
+// --- CoreDNSManager Implementation ---
+type coreDNSManager struct {
+	cmClient  ConfigMapClient
 	namespace string
 	configMap string
 }
 
-// NewCoreDNSManager creates a new instance of CoreDNSManager.
-func NewCoreDNSManager(namespace, configMap string, k8sConfig *rest.Config) (*CoreDNSManager, error) {
-
-	clientset, err := kubernetes.NewForConfig(k8sConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Kubernetes clientset: %v", err)
+// NewDNSManager is the factory function that creates a DNSManager.
+// If crClient is provided (non-nil), it uses the controller-runtime client;
+// otherwise, it falls back to using the standard Kubernetes clientset.
+func NewDNSManager(namespace, configMap string, k8sConfig *rest.Config, crClient client.Client) (DNSManager, error) {
+	var cmClient ConfigMapClient
+	var err error
+	if crClient != nil {
+		cmClient = newCRConfigMapClient(namespace, configMap, crClient)
+	} else {
+		cmClient, err = newClientsetConfigMapClient(namespace, configMap, k8sConfig)
+		if err != nil {
+			return nil, err
+		}
 	}
-
-	return &CoreDNSManager{
-		clientset: clientset,
+	return &coreDNSManager{
+		cmClient:  cmClient,
 		namespace: namespace,
 		configMap: configMap,
 	}, nil
 }
 
-// GetConfigMap retrieves the CoreDNS ConfigMap.
-func (c *CoreDNSManager) GetConfigMap(ctx context.Context) (*v1.ConfigMap, error) {
-	return c.clientset.CoreV1().ConfigMaps(c.namespace).Get(ctx, c.configMap, metav1.GetOptions{})
+// GetConfigMap retrieves the CoreDNS ConfigMap using the configured client.
+func (m *coreDNSManager) GetConfigMap(ctx context.Context) (*v1.ConfigMap, error) {
+	return m.cmClient.Get(ctx)
 }
 
-func (c *CoreDNSManager) AddDNSEntryToConfigMap(ctx context.Context, updatedData map[string]string) error {
-	cfg, err := c.GetConfigMap(ctx)
+func (m *coreDNSManager) AddDNSEntryToConfigMap(ctx context.Context, updatedData map[string]string) error {
+	cfg, err := m.GetConfigMap(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get ConfigMap: %w", err)
 	}
@@ -65,58 +135,40 @@ func (c *CoreDNSManager) AddDNSEntryToConfigMap(ctx context.Context, updatedData
 		return fmt.Errorf("corefile not found in ConfigMap data")
 	}
 
-	// Parse the existing Corefile into a structure we can manipulate.
 	cf, err := corefile.New(coreFileString)
 	if err != nil {
 		return fmt.Errorf("could not parse existing corefile: %v", err)
 	}
 
-	// Retrieve the server block for your inter-domain port.
 	interDomainServer, ok := cf.GetServer(env.GetInterDomainDomPort())
 	if !ok {
 		return fmt.Errorf("could not find inter-domain port '%v' in Corefile, check corefile syntax", env.GetInterDomainDomPort())
 	}
 
-	// Get the "hosts" plugin inside the inter-domain server block.
 	hostsPlugin, ok := interDomainServer.GetPlugin("hosts")
 	if !ok {
 		return fmt.Errorf("could not find 'hosts' plugin in the inter-domain server block")
 	}
 
-	// Convert updatedData from a single domain per IP into a map of IP->[]domains
-	// so we can pass it into the plugin’s AddHostsEntries method.
+	// Convert updatedData to map[ip][]domain
 	newEntries := map[string][]string{}
 	for ip, domain := range updatedData {
-		// Basic sanity checks, for example ensuring IP is valid:
 		if net.ParseIP(ip) == nil {
 			return fmt.Errorf("invalid IP address in updatedData: %q", ip)
 		}
 		newEntries[ip] = append(newEntries[ip], domain)
 	}
 
-	// Merge these new mappings into the existing "hosts" plugin.
 	if err := hostsPlugin.AddHostsEntries(newEntries); err != nil {
 		return fmt.Errorf("failed to add host entries: %v", err)
 	}
 
-	// Serialize the modified Corefile back to string.
-	updatedCoreFileString := cf.ToString()
-	cfg.Data["Corefile"] = updatedCoreFileString
-
-	_, err = c.clientset.CoreV1().ConfigMaps(c.namespace).
-		Update(ctx, cfg, metav1.UpdateOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to update ConfigMap with new Corefile: %v", err)
-	}
-
-	return nil
+	cfg.Data["Corefile"] = cf.ToString()
+	return m.cmClient.Update(ctx, cfg)
 }
 
-// RemoveDNSRecords removes one or more domains from the “hosts” plugin records
-// in the inter-domain server block. If an IP loses all domains, that IP entry
-// is removed entirely.
-func (c *CoreDNSManager) RemoveDNSRecords(ctx context.Context, removals map[string][]string) error {
-	cfg, err := c.GetConfigMap(ctx)
+func (m *coreDNSManager) RemoveDNSRecords(ctx context.Context, removals map[string][]string) error {
+	cfg, err := m.GetConfigMap(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get ConfigMap: %w", err)
 	}
@@ -148,24 +200,16 @@ func (c *CoreDNSManager) RemoveDNSRecords(ctx context.Context, removals map[stri
 		}
 	}
 
-	// Remove the specified domains for each IP in "hosts".
 	if err := hostsPlugin.RemoveHostsEntries(removals); err != nil {
 		return fmt.Errorf("failed to remove host entries: %v", err)
 	}
 
 	cfg.Data["Corefile"] = cf.ToString()
-	_, err = c.clientset.CoreV1().ConfigMaps(c.namespace).
-		Update(ctx, cfg, metav1.UpdateOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to update ConfigMap after removing entries: %v", err)
-	}
-
-	return nil
+	return m.cmClient.Update(ctx, cfg)
 }
 
-// ListDNSRecords returns the current IP->domains mapping from the inter-domain server’s “hosts” plugin.
-func (c *CoreDNSManager) ListDNSRecords(ctx context.Context) (map[string][]string, error) {
-	cfg, err := c.GetConfigMap(ctx)
+func (m *coreDNSManager) ListDNSRecords(ctx context.Context) (map[string][]string, error) {
+	cfg, err := m.GetConfigMap(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ConfigMap: %w", err)
 	}
@@ -193,35 +237,26 @@ func (c *CoreDNSManager) ListDNSRecords(ctx context.Context) (map[string][]strin
 	return hostsPlugin.ListHostsEntries()
 }
 
-// AddDNSEntry adds a new DNS entry to the CoreDNS ConfigMap.
-func (c *CoreDNSManager) AddDNSEntry(ctx context.Context, dnsName, ipAddress string) error {
+func (m *coreDNSManager) AddDNSEntry(ctx context.Context, dnsName, ipAddress string) error {
 	updatedData := map[string]string{
 		ipAddress: dnsName,
 	}
-	return c.AddDNSEntryToConfigMap(ctx, updatedData)
+	return m.AddDNSEntryToConfigMap(ctx, updatedData)
 }
 
-// RemoveDNSEntry removes a DNS entry from the CoreDNS ConfigMap.
-func (c *CoreDNSManager) RemoveDNSEntry(ctx context.Context, key string) error {
-	configMap, err := c.GetConfigMap(ctx)
+func (m *coreDNSManager) RemoveDNSEntry(ctx context.Context, key string) error {
+	cfg, err := m.GetConfigMap(ctx)
 	if err != nil {
 		return err
 	}
 
-	// Delete the entry from the ConfigMap.
-	delete(configMap.Data, key)
-
-	_, err = c.clientset.CoreV1().ConfigMaps(c.namespace).Update(ctx, configMap, metav1.UpdateOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to remove DNS entry: %v", err)
-	}
-
-	return nil
+	// Remove the specified DNS entry.
+	delete(cfg.Data, key)
+	return m.cmClient.Update(ctx, cfg)
 }
 
-func (c *CoreDNSManager) AddServerToConfigMap(ctx context.Context, domainName, serverDomain, serverPort string) error {
-
-	cfg, err := c.GetConfigMap(ctx)
+func (m *coreDNSManager) AddServerToConfigMap(ctx context.Context, domainName, serverDomain, serverPort string) error {
+	cfg, err := m.GetConfigMap(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get ConfigMap: %w", err)
 	}
@@ -231,7 +266,6 @@ func (c *CoreDNSManager) AddServerToConfigMap(ctx context.Context, domainName, s
 		return fmt.Errorf("corefile not found in ConfigMap data")
 	}
 
-	// Parse the existing Corefile into a structure we can manipulate.
 	cf, err := corefile.New(coreFileString)
 	if err != nil {
 		return fmt.Errorf("could not parse existing corefile: %v", err)
@@ -246,19 +280,10 @@ func (c *CoreDNSManager) AddServerToConfigMap(ctx context.Context, domainName, s
 		Plugins:  []*corefile.Plugin{&forwardPlugin},
 	}
 
-	err = cf.AddServer(newServer)
-	if err != nil {
+	if err := cf.AddServer(newServer); err != nil {
 		return fmt.Errorf("failed to add server in corefile: %v", err)
 	}
-	// Serialize the modified Corefile back to string.
-	updatedCoreFileString := cf.ToString()
-	cfg.Data["Corefile"] = updatedCoreFileString
 
-	_, err = c.clientset.CoreV1().ConfigMaps(c.namespace).
-		Update(ctx, cfg, metav1.UpdateOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to update ConfigMap with new Corefile: %v", err)
-	}
-
-	return nil
+	cfg.Data["Corefile"] = cf.ToString()
+	return m.cmClient.Update(ctx, cfg)
 }

@@ -24,7 +24,7 @@ import (
 
 type server struct {
 	dns.UnimplementedDnsServiceServer
-	configmapmanager.CoreDNSManager
+	configmapmanager.DNSManager
 }
 
 // CreateNetwork calls a method from mdclient to create a network
@@ -38,7 +38,7 @@ func (s *server) AddEntry(ctx context.Context, req *dns.AddEntryRequest) (*dns.A
 		return &dns.AddEntryResponse{}, fmt.Errorf("could not generate entry key. err: %v", err)
 	}
 
-	err = s.CoreDNSManager.AddDNSEntry(context.TODO(), entryKey, req.GetEntry().GetIpAddress())
+	err = s.DNSManager.AddDNSEntry(context.TODO(), entryKey, req.GetEntry().GetIpAddress())
 
 	if err != nil {
 		return &dns.AddEntryResponse{}, fmt.Errorf("could not create entry. err: %v", err)
@@ -50,7 +50,7 @@ func (s *server) AddEntry(ctx context.Context, req *dns.AddEntryRequest) (*dns.A
 
 func (s *server) AddServer(ctx context.Context, req *dns.AddServerRequest) (*dns.AddServerResponse, error) {
 
-	err := s.CoreDNSManager.AddServerToConfigMap(ctx, req.Server.GetDomPort(), req.Server.GetServerDomain(), req.Server.GetServerPort())
+	err := s.DNSManager.AddServerToConfigMap(ctx, req.Server.GetDomPort(), req.Server.GetServerDomain(), req.Server.GetServerPort())
 
 	if err != nil {
 		return &dns.AddServerResponse{}, fmt.Errorf("could not create server. err: %v", err)
