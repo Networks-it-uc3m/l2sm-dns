@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DnsService_AddEntry_FullMethodName = "/l2smdns.DnsService/AddEntry"
+	DnsService_AddEntry_FullMethodName  = "/l2smdns.DnsService/AddEntry"
+	DnsService_AddServer_FullMethodName = "/l2smdns.DnsService/AddServer"
 )
 
 // DnsServiceClient is the client API for DnsService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DnsServiceClient interface {
 	AddEntry(ctx context.Context, in *AddEntryRequest, opts ...grpc.CallOption) (*AddEntryResponse, error)
+	AddServer(ctx context.Context, in *AddServerRequest, opts ...grpc.CallOption) (*AddServerResponse, error)
 }
 
 type dnsServiceClient struct {
@@ -47,11 +49,22 @@ func (c *dnsServiceClient) AddEntry(ctx context.Context, in *AddEntryRequest, op
 	return out, nil
 }
 
+func (c *dnsServiceClient) AddServer(ctx context.Context, in *AddServerRequest, opts ...grpc.CallOption) (*AddServerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddServerResponse)
+	err := c.cc.Invoke(ctx, DnsService_AddServer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DnsServiceServer is the server API for DnsService service.
 // All implementations must embed UnimplementedDnsServiceServer
 // for forward compatibility.
 type DnsServiceServer interface {
 	AddEntry(context.Context, *AddEntryRequest) (*AddEntryResponse, error)
+	AddServer(context.Context, *AddServerRequest) (*AddServerResponse, error)
 	mustEmbedUnimplementedDnsServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedDnsServiceServer struct{}
 
 func (UnimplementedDnsServiceServer) AddEntry(context.Context, *AddEntryRequest) (*AddEntryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddEntry not implemented")
+}
+func (UnimplementedDnsServiceServer) AddServer(context.Context, *AddServerRequest) (*AddServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddServer not implemented")
 }
 func (UnimplementedDnsServiceServer) mustEmbedUnimplementedDnsServiceServer() {}
 func (UnimplementedDnsServiceServer) testEmbeddedByValue()                    {}
@@ -104,6 +120,24 @@ func _DnsService_AddEntry_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DnsService_AddServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DnsServiceServer).AddServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DnsService_AddServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DnsServiceServer).AddServer(ctx, req.(*AddServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DnsService_ServiceDesc is the grpc.ServiceDesc for DnsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var DnsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddEntry",
 			Handler:    _DnsService_AddEntry_Handler,
+		},
+		{
+			MethodName: "AddServer",
+			Handler:    _DnsService_AddServer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
