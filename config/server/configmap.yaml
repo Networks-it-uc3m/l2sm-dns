@@ -28,8 +28,6 @@ data:
             lameduck 5s
           }
           hosts {
-            10.0.0.1 test-pod.test-network.global.l2sm
-            fallthrough
           } 
           ready
           forward . /etc/resolv.conf
