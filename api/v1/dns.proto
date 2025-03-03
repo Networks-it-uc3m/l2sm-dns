@@ -7,6 +7,7 @@ option go_package = "github.com/Networks-it-uc3m/l2sm-dns/api/v1/dns";
 service DnsService {
   rpc AddEntry(AddEntryRequest) returns (AddEntryResponse);
   rpc AddServer(AddServerRequest) returns (AddServerResponse);
+  rpc DeleteEntry(DeleteEntryRequest) returns (DeleteEntryResponse);
 }
 
 message AddEntryRequest {
@@ -25,12 +26,21 @@ message AddEntryResponse {
   string message = 1;
 }
 
+message DeleteEntryRequest {
+  DNSEntry entry = 1;
+}
+
+message DeleteEntryResponse {
+  string message = 1;
+}
+
 message AddServerRequest {
   Server server = 1;
 }
 message AddServerResponse {
   string message = 1;
 }
+
 
 message Server {
   string domPort = 1;

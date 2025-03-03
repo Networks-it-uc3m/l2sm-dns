@@ -47,6 +47,25 @@ func (s *server) AddEntry(ctx context.Context, req *dns.AddEntryRequest) (*dns.A
 	return &dns.AddEntryResponse{}, nil
 
 }
+func (s *server) DeleteEntry(ctx context.Context, req *dns.DeleteEntryRequest) (*dns.DeleteEntryResponse, error) {
+
+	dnsEntry := configmapmanager.DNSEntry{PodName: req.Entry.GetPodName(), Network: req.Entry.GetNetwork(), Scope: req.Entry.GetScope()}
+
+	entryKey, err := configmapmanager.GenerateKey(dnsEntry)
+
+	if err != nil {
+		return &dns.AddEntryResponse{}, fmt.Errorf("could not generate entry key. err: %v", err)
+	}
+
+	err = s.DNSManager.DeleteNSEntry(context.TODO(), entryKey, req.GetEntry().GetIpAddress())
+
+	if err != nil {
+		return &dns.AddEntryResponse{}, fmt.Errorf("could not create entry. err: %v", err)
+	}
+
+	return &dns.AddEntryResponse{}, nil
+
+}
 
 func (s *server) AddServer(ctx context.Context, req *dns.AddServerRequest) (*dns.AddServerResponse, error) {
 

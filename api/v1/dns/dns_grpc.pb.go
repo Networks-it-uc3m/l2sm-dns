@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DnsService_AddEntry_FullMethodName  = "/l2smdns.DnsService/AddEntry"
-	DnsService_AddServer_FullMethodName = "/l2smdns.DnsService/AddServer"
+	DnsService_AddEntry_FullMethodName    = "/l2smdns.DnsService/AddEntry"
+	DnsService_AddServer_FullMethodName   = "/l2smdns.DnsService/AddServer"
+	DnsService_DeleteEntry_FullMethodName = "/l2smdns.DnsService/DeleteEntry"
 )
 
 // DnsServiceClient is the client API for DnsService service.
@@ -29,6 +30,7 @@ const (
 type DnsServiceClient interface {
 	AddEntry(ctx context.Context, in *AddEntryRequest, opts ...grpc.CallOption) (*AddEntryResponse, error)
 	AddServer(ctx context.Context, in *AddServerRequest, opts ...grpc.CallOption) (*AddServerResponse, error)
+	DeleteEntry(ctx context.Context, in *DeleteEntryRequest, opts ...grpc.CallOption) (*DeleteEntryResponse, error)
 }
 
 type dnsServiceClient struct {
@@ -59,12 +61,23 @@ func (c *dnsServiceClient) AddServer(ctx context.Context, in *AddServerRequest, 
 	return out, nil
 }
 
+func (c *dnsServiceClient) DeleteEntry(ctx context.Context, in *DeleteEntryRequest, opts ...grpc.CallOption) (*DeleteEntryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteEntryResponse)
+	err := c.cc.Invoke(ctx, DnsService_DeleteEntry_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DnsServiceServer is the server API for DnsService service.
 // All implementations must embed UnimplementedDnsServiceServer
 // for forward compatibility.
 type DnsServiceServer interface {
 	AddEntry(context.Context, *AddEntryRequest) (*AddEntryResponse, error)
 	AddServer(context.Context, *AddServerRequest) (*AddServerResponse, error)
+	DeleteEntry(context.Context, *DeleteEntryRequest) (*DeleteEntryResponse, error)
 	mustEmbedUnimplementedDnsServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedDnsServiceServer) AddEntry(context.Context, *AddEntryRequest)
 }
 func (UnimplementedDnsServiceServer) AddServer(context.Context, *AddServerRequest) (*AddServerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddServer not implemented")
+}
+func (UnimplementedDnsServiceServer) DeleteEntry(context.Context, *DeleteEntryRequest) (*DeleteEntryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteEntry not implemented")
 }
 func (UnimplementedDnsServiceServer) mustEmbedUnimplementedDnsServiceServer() {}
 func (UnimplementedDnsServiceServer) testEmbeddedByValue()                    {}
@@ -138,6 +154,24 @@ func _DnsService_AddServer_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DnsService_DeleteEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DnsServiceServer).DeleteEntry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DnsService_DeleteEntry_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DnsServiceServer).DeleteEntry(ctx, req.(*DeleteEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DnsService_ServiceDesc is the grpc.ServiceDesc for DnsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var DnsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddServer",
 			Handler:    _DnsService_AddServer_Handler,
+		},
+		{
+			MethodName: "DeleteEntry",
+			Handler:    _DnsService_DeleteEntry_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

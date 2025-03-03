@@ -177,6 +177,94 @@ func (x *AddEntryResponse) GetMessage() string {
 	return ""
 }
 
+type DeleteEntryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entry         *DNSEntry              `protobuf:"bytes,1,opt,name=entry,proto3" json:"entry,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEntryRequest) Reset() {
+	*x = DeleteEntryRequest{}
+	mi := &file_dns_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEntryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEntryRequest) ProtoMessage() {}
+
+func (x *DeleteEntryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_dns_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEntryRequest.ProtoReflect.Descriptor instead.
+func (*DeleteEntryRequest) Descriptor() ([]byte, []int) {
+	return file_dns_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *DeleteEntryRequest) GetEntry() *DNSEntry {
+	if x != nil {
+		return x.Entry
+	}
+	return nil
+}
+
+type DeleteEntryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEntryResponse) Reset() {
+	*x = DeleteEntryResponse{}
+	mi := &file_dns_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEntryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEntryResponse) ProtoMessage() {}
+
+func (x *DeleteEntryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_dns_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEntryResponse.ProtoReflect.Descriptor instead.
+func (*DeleteEntryResponse) Descriptor() ([]byte, []int) {
+	return file_dns_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *DeleteEntryResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 type AddServerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Server        *Server                `protobuf:"bytes,1,opt,name=server,proto3" json:"server,omitempty"`
@@ -186,7 +274,7 @@ type AddServerRequest struct {
 
 func (x *AddServerRequest) Reset() {
 	*x = AddServerRequest{}
-	mi := &file_dns_proto_msgTypes[3]
+	mi := &file_dns_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -198,7 +286,7 @@ func (x *AddServerRequest) String() string {
 func (*AddServerRequest) ProtoMessage() {}
 
 func (x *AddServerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_dns_proto_msgTypes[3]
+	mi := &file_dns_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -211,7 +299,7 @@ func (x *AddServerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddServerRequest.ProtoReflect.Descriptor instead.
 func (*AddServerRequest) Descriptor() ([]byte, []int) {
-	return file_dns_proto_rawDescGZIP(), []int{3}
+	return file_dns_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *AddServerRequest) GetServer() *Server {
@@ -230,7 +318,7 @@ type AddServerResponse struct {
 
 func (x *AddServerResponse) Reset() {
 	*x = AddServerResponse{}
-	mi := &file_dns_proto_msgTypes[4]
+	mi := &file_dns_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -242,7 +330,7 @@ func (x *AddServerResponse) String() string {
 func (*AddServerResponse) ProtoMessage() {}
 
 func (x *AddServerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_dns_proto_msgTypes[4]
+	mi := &file_dns_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -255,7 +343,7 @@ func (x *AddServerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddServerResponse.ProtoReflect.Descriptor instead.
 func (*AddServerResponse) Descriptor() ([]byte, []int) {
-	return file_dns_proto_rawDescGZIP(), []int{4}
+	return file_dns_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *AddServerResponse) GetMessage() string {
@@ -276,7 +364,7 @@ type Server struct {
 
 func (x *Server) Reset() {
 	*x = Server{}
-	mi := &file_dns_proto_msgTypes[5]
+	mi := &file_dns_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -288,7 +376,7 @@ func (x *Server) String() string {
 func (*Server) ProtoMessage() {}
 
 func (x *Server) ProtoReflect() protoreflect.Message {
-	mi := &file_dns_proto_msgTypes[5]
+	mi := &file_dns_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -301,7 +389,7 @@ func (x *Server) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Server.ProtoReflect.Descriptor instead.
 func (*Server) Descriptor() ([]byte, []int) {
-	return file_dns_proto_rawDescGZIP(), []int{5}
+	return file_dns_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Server) GetDomPort() string {
@@ -343,6 +431,13 @@ var file_dns_proto_rawDesc = string([]byte{
 	0x05, 0x73, 0x63, 0x6f, 0x70, 0x65, 0x22, 0x2c, 0x0a, 0x10, 0x41, 0x64, 0x64, 0x45, 0x6e, 0x74,
 	0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65,
 	0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x65, 0x22, 0x3d, 0x0a, 0x12, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x45, 0x6e,
+	0x74, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x27, 0x0a, 0x05, 0x65, 0x6e,
+	0x74, 0x72, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x6c, 0x32, 0x73, 0x6d,
+	0x64, 0x6e, 0x73, 0x2e, 0x44, 0x4e, 0x53, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x05, 0x65, 0x6e,
+	0x74, 0x72, 0x79, 0x22, 0x2f, 0x0a, 0x13, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x45, 0x6e, 0x74,
+	0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73,
 	0x73, 0x61, 0x67, 0x65, 0x22, 0x3b, 0x0a, 0x10, 0x41, 0x64, 0x64, 0x53, 0x65, 0x72, 0x76, 0x65,
 	0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x27, 0x0a, 0x06, 0x73, 0x65, 0x72, 0x76,
 	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x6c, 0x32, 0x73, 0x6d, 0x64,
@@ -356,7 +451,7 @@ var file_dns_proto_rawDesc = string([]byte{
 	0x6d, 0x61, 0x69, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x73, 0x65, 0x72, 0x76,
 	0x65, 0x72, 0x44, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x72, 0x76,
 	0x65, 0x72, 0x50, 0x6f, 0x72, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x73, 0x65,
-	0x72, 0x76, 0x65, 0x72, 0x50, 0x6f, 0x72, 0x74, 0x32, 0x91, 0x01, 0x0a, 0x0a, 0x44, 0x6e, 0x73,
+	0x72, 0x76, 0x65, 0x72, 0x50, 0x6f, 0x72, 0x74, 0x32, 0xdb, 0x01, 0x0a, 0x0a, 0x44, 0x6e, 0x73,
 	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x3f, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x45, 0x6e,
 	0x74, 0x72, 0x79, 0x12, 0x18, 0x2e, 0x6c, 0x32, 0x73, 0x6d, 0x64, 0x6e, 0x73, 0x2e, 0x41, 0x64,
 	0x64, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e,
@@ -365,11 +460,16 @@ var file_dns_proto_rawDesc = string([]byte{
 	0x65, 0x72, 0x76, 0x65, 0x72, 0x12, 0x19, 0x2e, 0x6c, 0x32, 0x73, 0x6d, 0x64, 0x6e, 0x73, 0x2e,
 	0x41, 0x64, 0x64, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
 	0x1a, 0x1a, 0x2e, 0x6c, 0x32, 0x73, 0x6d, 0x64, 0x6e, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x53, 0x65,
-	0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x31, 0x5a, 0x2f,
-	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x4e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x73, 0x2d, 0x69, 0x74, 0x2d, 0x75, 0x63, 0x33, 0x6d, 0x2f, 0x6c, 0x32, 0x73, 0x6d,
-	0x2d, 0x64, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x76, 0x31, 0x2f, 0x64, 0x6e, 0x73, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x48, 0x0a, 0x0b,
+	0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x1b, 0x2e, 0x6c, 0x32,
+	0x73, 0x6d, 0x64, 0x6e, 0x73, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x45, 0x6e, 0x74, 0x72,
+	0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1c, 0x2e, 0x6c, 0x32, 0x73, 0x6d, 0x64,
+	0x6e, 0x73, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x31, 0x5a, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x2d, 0x69, 0x74,
+	0x2d, 0x75, 0x63, 0x33, 0x6d, 0x2f, 0x6c, 0x32, 0x73, 0x6d, 0x2d, 0x64, 0x6e, 0x73, 0x2f, 0x61,
+	0x70, 0x69, 0x2f, 0x76, 0x31, 0x2f, 0x64, 0x6e, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 })
 
 var (
@@ -384,27 +484,32 @@ func file_dns_proto_rawDescGZIP() []byte {
 	return file_dns_proto_rawDescData
 }
 
-var file_dns_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_dns_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_dns_proto_goTypes = []any{
-	(*AddEntryRequest)(nil),   // 0: l2smdns.AddEntryRequest
-	(*DNSEntry)(nil),          // 1: l2smdns.DNSEntry
-	(*AddEntryResponse)(nil),  // 2: l2smdns.AddEntryResponse
-	(*AddServerRequest)(nil),  // 3: l2smdns.AddServerRequest
-	(*AddServerResponse)(nil), // 4: l2smdns.AddServerResponse
-	(*Server)(nil),            // 5: l2smdns.Server
+	(*AddEntryRequest)(nil),     // 0: l2smdns.AddEntryRequest
+	(*DNSEntry)(nil),            // 1: l2smdns.DNSEntry
+	(*AddEntryResponse)(nil),    // 2: l2smdns.AddEntryResponse
+	(*DeleteEntryRequest)(nil),  // 3: l2smdns.DeleteEntryRequest
+	(*DeleteEntryResponse)(nil), // 4: l2smdns.DeleteEntryResponse
+	(*AddServerRequest)(nil),    // 5: l2smdns.AddServerRequest
+	(*AddServerResponse)(nil),   // 6: l2smdns.AddServerResponse
+	(*Server)(nil),              // 7: l2smdns.Server
 }
 var file_dns_proto_depIdxs = []int32{
 	1, // 0: l2smdns.AddEntryRequest.entry:type_name -> l2smdns.DNSEntry
-	5, // 1: l2smdns.AddServerRequest.server:type_name -> l2smdns.Server
-	0, // 2: l2smdns.DnsService.AddEntry:input_type -> l2smdns.AddEntryRequest
-	3, // 3: l2smdns.DnsService.AddServer:input_type -> l2smdns.AddServerRequest
-	2, // 4: l2smdns.DnsService.AddEntry:output_type -> l2smdns.AddEntryResponse
-	4, // 5: l2smdns.DnsService.AddServer:output_type -> l2smdns.AddServerResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // 1: l2smdns.DeleteEntryRequest.entry:type_name -> l2smdns.DNSEntry
+	7, // 2: l2smdns.AddServerRequest.server:type_name -> l2smdns.Server
+	0, // 3: l2smdns.DnsService.AddEntry:input_type -> l2smdns.AddEntryRequest
+	5, // 4: l2smdns.DnsService.AddServer:input_type -> l2smdns.AddServerRequest
+	3, // 5: l2smdns.DnsService.DeleteEntry:input_type -> l2smdns.DeleteEntryRequest
+	2, // 6: l2smdns.DnsService.AddEntry:output_type -> l2smdns.AddEntryResponse
+	6, // 7: l2smdns.DnsService.AddServer:output_type -> l2smdns.AddServerResponse
+	4, // 8: l2smdns.DnsService.DeleteEntry:output_type -> l2smdns.DeleteEntryResponse
+	6, // [6:9] is the sub-list for method output_type
+	3, // [3:6] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_dns_proto_init() }
@@ -418,7 +523,7 @@ func file_dns_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_dns_proto_rawDesc), len(file_dns_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
