@@ -25,7 +25,7 @@ type DNSManager interface {
 	RemoveDNSRecords(ctx context.Context, removals map[string][]string) error
 	ListDNSRecords(ctx context.Context) (map[string][]string, error)
 	AddDNSEntry(ctx context.Context, dnsName, ipAddress string) error
-	RemoveDNSEntry(ctx context.Context, key string) error
+	RemoveDNSEntry(ctx context.Context, key, ipAddress string) error
 	AddServerToConfigMap(ctx context.Context, domainName, serverDomain, serverPort string) error
 }
 
@@ -244,14 +244,40 @@ func (m *coreDNSManager) AddDNSEntry(ctx context.Context, dnsName, ipAddress str
 	return m.AddDNSEntryToConfigMap(ctx, updatedData)
 }
 
-func (m *coreDNSManager) RemoveDNSEntry(ctx context.Context, key string) error {
+func (m *coreDNSManager) RemoveDNSEntry(ctx context.Context, key, ipAddress string) error {
+
+	deletedEntries := make(map[string][]string)
+
+	deletedEntries[ipAddress] = []string{key}
+
 	cfg, err := m.GetConfigMap(ctx)
 	if err != nil {
 		return err
 	}
+	coreFileString, ok := cfg.Data["Corefile"]
+	if !ok {
+		return fmt.Errorf("corefile not found in ConfigMap data")
+	}
 
-	// Remove the specified DNS entry.
-	delete(cfg.Data, key)
+	cf, err := corefile.New(coreFileString)
+	if err != nil {
+		return fmt.Errorf("could not parse existing corefile: %v", err)
+	}
+
+	interDomainServer, ok := cf.GetServer(env.GetInterDomainDomPort())
+	if !ok {
+		return fmt.Errorf("could not find inter-domain port '%v' in Corefile, check corefile syntax", env.GetInterDomainDomPort())
+	}
+
+	hostsPlugin, ok := interDomainServer.GetPlugin("hosts")
+	if !ok {
+		return fmt.Errorf("could not find 'hosts' plugin in the inter-domain server block")
+	}
+
+	if err := hostsPlugin.RemoveHostsEntries(deletedEntries); err != nil {
+		return fmt.Errorf("failed to add host entries: %v", err)
+	}
+
 	return m.cmClient.Update(ctx, cfg)
 }
 

@@ -54,16 +54,16 @@ func (s *server) DeleteEntry(ctx context.Context, req *dns.DeleteEntryRequest) (
 	entryKey, err := configmapmanager.GenerateKey(dnsEntry)
 
 	if err != nil {
-		return &dns.AddEntryResponse{}, fmt.Errorf("could not generate entry key. err: %v", err)
+		return &dns.DeleteEntryResponse{}, fmt.Errorf("could not generate entry key. err: %v", err)
 	}
 
-	err = s.DNSManager.DeleteNSEntry(context.TODO(), entryKey, req.GetEntry().GetIpAddress())
+	err = s.DNSManager.RemoveDNSEntry(context.TODO(), entryKey, req.GetEntry().GetIpAddress())
 
 	if err != nil {
-		return &dns.AddEntryResponse{}, fmt.Errorf("could not create entry. err: %v", err)
+		return &dns.DeleteEntryResponse{}, fmt.Errorf("could not create entry. err: %v", err)
 	}
 
-	return &dns.AddEntryResponse{}, nil
+	return &dns.DeleteEntryResponse{}, nil
 
 }
 
