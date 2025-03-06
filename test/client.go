@@ -28,6 +28,7 @@ func main() {
 	// Command-line flags.
 	testAddEntry := flag.Bool("test-add-entry", false, "Simulate adding a DNS entry")
 	testAddServer := flag.Bool("test-add-server", false, "Simulate adding a server")
+	testDeleteEntry := flag.Bool("test-delete-entry", false, "Simulate deleting a DNS entry")
 
 	configPath := flag.String("config", "./config.yaml", "Path to YAML config file")
 	// Allow overriding default DNS entry parameters from config.
@@ -86,6 +87,26 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		resp, err := client.AddEntry(ctx, req)
+		if err != nil {
+			log.Fatalf("Failed to add DNS entry: %v", err)
+		}
+		fmt.Printf("AddEntry response: %s\n", resp.GetMessage())
+	}
+
+	if *testDeleteEntry {
+		fmt.Println("Sending DeleteEntry request...")
+		req := &dns.DeleteEntryRequest{
+			Entry: &dns.DNSEntry{
+				PodName:   cfg.DNS.PodName,
+				IpAddress: cfg.DNS.IpAddress,
+				Network:   cfg.DNS.Network,
+				Scope:     cfg.DNS.Scope,
+			},
+		}
+		// Wrap the call in a context with timeout.
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		resp, err := client.DeleteEntry(ctx, req)
 		if err != nil {
 			log.Fatalf("Failed to add DNS entry: %v", err)
 		}

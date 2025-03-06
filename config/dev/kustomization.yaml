@@ -50,4 +50,4 @@ patches:
 # Uncomment 'CERTMANAGER' sections in crd/kustomization.yaml to enable the CA injection in the admission webhooks.
 # 'CERTMANAGER' needs to be enabled to use ca injection
 - path: dns_patch.yaml
-# - path: coredns_service_patch.yaml
+- path: coredns_service_patch.yaml
