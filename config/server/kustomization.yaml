@@ -21,7 +21,7 @@ kind: Kustomization
 images:
 - name: dns
   newName: alexdecb/l2smdns-grpc
-  newTag: "1.1"
+  newTag: 1.1.2
 - name: dns-grpc
   newName: alexdecb/l2smdns-grpc
   newTag: "1.0"

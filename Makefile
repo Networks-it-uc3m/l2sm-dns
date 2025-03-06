@@ -1,5 +1,5 @@
 
-TAG = 1.1
+TAG = 1.1.2
 # Image URL to use for building/pushing
 IMG ?= alexdecb/l2smdns-grpc:$(TAG)
 
