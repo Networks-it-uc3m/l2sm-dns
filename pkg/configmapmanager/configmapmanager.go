@@ -278,6 +278,8 @@ func (m *coreDNSManager) RemoveDNSEntry(ctx context.Context, key, ipAddress stri
 		return fmt.Errorf("failed to add host entries: %v", err)
 	}
 
+	cfg.Data["Corefile"] = cf.ToString()
+
 	return m.cmClient.Update(ctx, cfg)
 }
 
