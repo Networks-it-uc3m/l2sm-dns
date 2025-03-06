@@ -21,12 +21,12 @@ serverAddress: "localhost:8081"
 
 # Default DNS entry parameters for testing.
 dns:
-  podName: "pingi"
-  ipAddress: "10.1.1.2"
+  podName: "pingai"
+  ipAddress: "10.0.1.2"
   network: "test-networking"
   scope: "global"
 
 server: 
-  domPort: "inter.l2sm"
+  domPort: "inter.l2sma"
   serverDomain: "172.20.0.2"
   serverPort: "30053"
